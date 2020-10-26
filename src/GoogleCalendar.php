@@ -8,6 +8,7 @@ use DateTime;
 use Google_Service_Calendar;
 use Google_Service_Calendar_Event;
 use Google_Service_Calendar_Events;
+use Illuminate\Support\Str;
 
 class GoogleCalendar
 {
@@ -72,7 +73,17 @@ class GoogleCalendar
             $event = $event->googleEvent;
         }
 
-        return $this->calendarService->events->insert($this->calendarId, $event, $optParams);
+        $event = $this->calendarService->events->insert($this->calendarId, $event, $optParams);
+
+        $conference = new \Google_Service_Calendar_ConferenceData();
+        $conferenceRequest = new \Google_Service_Calendar_CreateConferenceRequest();
+        $conferenceRequest->setRequestId(Str::random(40));
+        $conference->setCreateRequest($conferenceRequest);
+        $event->setConferenceData($conference);
+
+        $event = $this->calendarService->events->patch($this->calendarId, $event->id, $event, ['conferenceDataVersion' => 1]);
+
+        return $event;
     }
 
     /*

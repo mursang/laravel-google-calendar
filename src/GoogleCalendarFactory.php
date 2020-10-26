@@ -24,7 +24,7 @@ class GoogleCalendarFactory
         $authProfile = $config['default_auth_profile'];
 
         if ($authProfile === 'service_account') {
-            return self::createServiceAccountClient($config['auth_profiles']['service_account']);
+            return self::createServiceAccountClient($config['auth_profiles']['service_account'], $config);
         }
         if ($authProfile === 'oauth') {
             return self::createOAuthClient($config['auth_profiles']['oauth']);
@@ -33,7 +33,7 @@ class GoogleCalendarFactory
         throw InvalidConfiguration::invalidAuthenticationProfile($authProfile);
     }
 
-    protected static function createServiceAccountClient(array $authProfile): Google_Client
+    protected static function createServiceAccountClient(array $authProfile, array $config): Google_Client
     {
         $client = new Google_Client;
 
@@ -42,6 +42,7 @@ class GoogleCalendarFactory
         ]);
 
         $client->setAuthConfig($authProfile['credentials_json']);
+        $client->setSubject($config['user_to_impersonate']);
 
         return $client;
     }
